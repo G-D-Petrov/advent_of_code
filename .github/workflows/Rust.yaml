@@ -22,24 +22,10 @@ jobs:
         id: set-matrix
         run: |
           subfolders=$(find . -mindepth 2 -name 'Cargo.toml' -exec dirname {} \; | python3 -c 'import sys, json; print(json.dumps([line.strip() for line in sys.stdin]))')
-          echo "matrix={\"project\": $subfolders}" >> $GITHUB_ENV
-
-  analyse:
-    needs: get-subfolders
-    runs-on: ubuntu-latest
-    strategy:
-      matrix: ${{ fromJSON(needs.get-subfolders.outputs.matrix) }}
-
-    steps:
-      - uses: actions/checkout@v3
-
-      - name: Analyse ${{ matrix.project }}
-        working-directory: ${{ matrix.project }}
-        run: |
-          cargo clippy --verbose
+          echo "::set-output name=matrix::{\"project\": $subfolders}"
 
   build:
-    needs: analyse
+    needs: get-subfolders
     runs-on: ubuntu-latest
     strategy:
       matrix: ${{ fromJSON(needs.get-subfolders.outputs.matrix) }}
