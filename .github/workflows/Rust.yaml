@@ -10,25 +10,32 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  build:
+  get-subfolders:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        project: ${{ fromJSON(steps.get-subfolders.outputs.subfolders) }}
-
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
       - name: Get Subfolders
-        id: get-subfolders
+        id: set-matrix
         run: |
           subfolders=$(find . -mindepth 2 -name 'Cargo.toml' -exec dirname {} \; | python3 -c 'import sys, json; print(json.dumps([line.strip() for line in sys.stdin]))')
-          echo "subfolders=$subfolders" >> $GITHUB_ENV
-          echo "::set-output name=subfolders::$subfolders"
+          echo "::set-output name=matrix::{\"project\": $subfolders}"
 
+  build:
+    needs: get-subfolders
+    runs-on: ubuntu-latest
+    strategy:
+      matrix: ${{ fromJSON(needs.get-subfolders.outputs.matrix) }}
+
+    steps:
       - uses: actions/checkout@v3
 
       - name: Build and run tests for ${{ matrix.project }}
         working-directory: ${{ matrix.project }}
         run: |
-          cargo clippy --verbose
+          cargo clippy
           cargo build --verbose
           cargo test --verbose
