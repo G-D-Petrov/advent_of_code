@@ -1,0 +1,27 @@
+name: Rust Subfolder
+
+on:
+  workflow_dispatch:
+    inputs:
+      subfolder:
+        description: 'Subfolder to build and test'
+        required: true
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build_and_test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Build ${{ github.event.inputs.subfolder }}
+        working-directory: ${{ github.event.inputs.subfolder }}
+        run: |
+          cargo build --verbose
+
+      - name: Test ${{ github.event.inputs.subfolder }}
+        working-directory: ${{ github.event.inputs.subfolder }}
+        run: |
+          cargo test --verbose

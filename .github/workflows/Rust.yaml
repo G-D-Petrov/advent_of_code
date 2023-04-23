@@ -1,27 +1,30 @@
-name: Rust Subfolder
+name: Rust
 
 on:
-  workflow_dispatch:
-    inputs:
-      subfolder:
-        description: 'Subfolder to build and test'
-        required: true
-
-env:
-  CARGO_TERM_COLOR: always
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
 
 jobs:
-  build_and_test:
+  trigger_subfolder_workflows:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout repository
+        uses: actions/checkout@v3
 
-      - name: Build ${{ github.event.inputs.subfolder }}
-        working-directory: ${{ github.event.inputs.subfolder }}
-        run: |
-          cargo build --verbose
+      - name: Trigger Subfolder Workflows
+        uses: benc-uk/workflow-dispatch@v1
+        with:
+          workflow: Rust-Subfolder.yaml
+          token: ${{ secrets.GITHUB_TOKEN }}
+          inputs: |
+            subfolder: ${{ steps.get-subfolders.outputs.subfolders }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Test ${{ github.event.inputs.subfolder }}
-        working-directory: ${{ github.event.inputs.subfolder }}
+      - name: Get Subfolders
+        id: get-subfolders
         run: |
-          cargo test --verbose
+          subfolders=$(find . -mindepth 2 -name 'Cargo.toml' -exec dirname {} \; | tr '\n' ',')
+          echo "::set-output name=subfolders::$subfolders"
