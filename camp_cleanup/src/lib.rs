@@ -1,10 +1,14 @@
 use std::ops::RangeInclusive;
 
-fn check_range(bigger: RangeInclusive<usize>, smaller: RangeInclusive<usize>) -> bool {
+fn check_range_partial(bigger: RangeInclusive<usize>, smaller: RangeInclusive<usize>) -> bool {
+    bigger.contains(smaller.start()) || bigger.contains(smaller.end())
+}
+
+fn check_range_full(bigger: RangeInclusive<usize>, smaller: RangeInclusive<usize>) -> bool {
     bigger.contains(smaller.start()) && bigger.contains(smaller.end())
 }
 
-pub fn camp_cleanup(input: &str) -> usize {
+pub fn camp_cleanup(input: &str, check_range: fn(RangeInclusive<usize>, RangeInclusive<usize>) -> bool) -> usize {
     let mut result = 0;
     for line in input.lines() {
         let ranges = line.split(',').collect::<Vec<_>>();
@@ -32,14 +36,28 @@ mod tests {
     #[test]
     fn part_1_1() {
         let input = include_str!("test_input.txt");
-        let result = camp_cleanup(input);
+        let result = camp_cleanup(input, check_range_full);
         assert_eq!(result, 2);
     }
 
     #[test]
     fn part_1_2() {
         let input = include_str!("test_1_2.txt");
-        let result = camp_cleanup(input);
+        let result = camp_cleanup(input, check_range_full);
         assert_eq!(result, 464);
+    }
+
+    #[test]
+    fn part_2_1() {
+        let input = include_str!("test_input.txt");
+        let result = camp_cleanup(input, check_range_partial);
+        assert_eq!(result, 4);
+    }
+
+    #[test]
+    fn part_2_2() {
+        let input = include_str!("test_2_2.txt");
+        let result = camp_cleanup(input, check_range_partial);
+        assert_eq!(result, 770);
     }
 }
