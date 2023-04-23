@@ -21,8 +21,8 @@ jobs:
       - name: Get Subfolders
         id: set-matrix
         run: |
-          subfolders=$(find . -mindepth 2 -name 'Cargo.toml' -exec dirname {} \; | python3 -c 'import sys, json; print(json.dumps([line.strip() for line in sys.stdin]))')
-          echo "matrix={\"project\": $subfolders}" >> $GITHUB_ENV
+          subfolders=$(find . -mindepth 2 -name 'Cargo.toml' -exec dirname {} \; | python3 -c 'import sys, json; print(json.dumps([{"project": line.strip()} for line in sys.stdin]))')
+          echo "::set-output name=matrix::$subfolders"
 
   build:
     needs: get-subfolders
