@@ -24,7 +24,8 @@ print(f"Found {len(open_issues)} open issues")
 # Iterate over the warnings and create issues
 for warning in warnings.strip().split("\n"):
     # Format the title of the issue
-    issue_title = warning.split('\\n', 1)[0]
+    print(f"Creating issue for warning: {warning}")
+    issue_title = warning.split('\n', 1)[0]
     title = f"Build warning: { issue_title }"
 
     # Check if an issue with the same title already exists
