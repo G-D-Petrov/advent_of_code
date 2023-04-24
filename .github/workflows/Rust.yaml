@@ -27,26 +27,26 @@ jobs:
     needs: get-subfolders
     runs-on: ubuntu-latest
     strategy:
-      matrix: ${{ fromJSON(needs.get-subfolders.outputs.matrix) }}
+      json_matrix: ${{ fromJSON(needs.get-subfolders.outputs.matrix) }}
 
     steps:
       - uses: actions/checkout@v3
 
-      - name: Build ${{ matrix.project }}
-        working-directory: ${{ matrix.project }}
+      - name: Build ${{ json_matrix.project }}
+        working-directory: ${{ json_matrix.project }}
         run: |
           cargo build --verbose
-          
+
   test:
     needs: build
     runs-on: ubuntu-latest
     strategy:
-      matrix: ${{ fromJSON(needs.get-subfolders.outputs.matrix) }}
+      json_matrix: ${{ fromJSON(needs.get-subfolders.outputs.matrix) }}
 
     steps:
       - uses: actions/checkout@v3
 
-      - name: Test ${{ matrix.project }}
-        working-directory: ${{ matrix.project }}
+      - name: Test ${{ json_matrix.project }}
+        working-directory: ${{ json_matrix.project }}
         run: |
           cargo test --verbose --no-default-features --features "test-binaries"
