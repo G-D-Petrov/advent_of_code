@@ -10,15 +10,7 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  install_dep:
-    runs-on: ubuntu-latest
-    steps:
-    - name: Install pyGithub
-      run: |
-        python3 -m pip install pyGithub
-
   get-subfolders:
-    needs: install_dep
     runs-on: ubuntu-latest
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
@@ -40,6 +32,10 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
+
+      - name: Install pyGithub
+        run: |
+          python3 -m pip install pyGithub
 
       - name: Run cargo clippy and save output
         working-directory: ${{ matrix.project }}
