@@ -36,7 +36,7 @@ jobs:
       - name: Extract warnings and create issues
         working-directory: ${{ matrix.project }}
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.PAT }}
         run: |
           cargo clippy --verbose 2>&1 | grep '^warning:' | python3 $GITHUB_WORKSPACE/.github/scripts/create_issues.py
 
