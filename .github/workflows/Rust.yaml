@@ -45,7 +45,7 @@ jobs:
       - name: Create issues for build warnings
         working-directory: ${{ matrix.project }}
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.PAT }}
         run: |
           python3 $GITHUB_WORKSPACE/.github/scripts/create_issues.py clippy_output.log
 
