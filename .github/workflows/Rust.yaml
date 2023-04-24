@@ -10,10 +10,11 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  get-subfolders:
+  build_and_test:
     runs-on: ubuntu-latest
-    outputs:
-      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    strategy:
+      matrix:
+        project: ${{ steps.set-matrix.outputs.subfolders }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -22,43 +23,12 @@ jobs:
         id: set-matrix
         run: |
           subfolders=$(find . -mindepth 2 -name 'Cargo.toml' -exec dirname {} \; | python3 -c 'import sys, json; print(json.dumps([line.strip() for line in sys.stdin]))')
-          echo "::set-output name=matrix::{\"project\": $subfolders}"
-
-  build:
-    needs: get-subfolders
-    runs-on: ubuntu-latest
-    strategy:
-      matrix: ${{ fromJSON(needs.get-subfolders.outputs.matrix) }}
-    outputs:
-      projects: ${{ toJSON(needs.get-subfolders.outputs.matrix.project) }}
-
-    steps:
-      - uses: actions/checkout@v3
+          echo "::set-output name=subfolders::${subfolders}"
 
       - name: Build ${{ matrix.project }}
         working-directory: ${{ matrix.project }}
         run: |
           cargo build --verbose
-
-      # - name: Upload binaries
-      #   uses: actions/upload-artifact@v2
-      #   with:
-      #     name: binaries-${{ matrix.project }}
-      #     path: ${{ matrix.project }}/target/debug/
-
-  test:
-    needs: build
-    runs-on: ubuntu-latest
-    strategy:
-      matrix: ${{ fromJSON(needs.build.outputs.projects) }}
-    steps:
-      - uses: actions/checkout@v3
-
-      # - name: Download binaries
-      #   uses: actions/download-artifact@v2
-      #   with:
-      #     name: binaries-${{ matrix.project }}
-      #     path: ${{ matrix.project }}/target/debug/
 
       - name: Test ${{ matrix.project }}
         working-directory: ${{ matrix.project }}
