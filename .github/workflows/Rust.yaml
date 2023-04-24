@@ -23,14 +23,14 @@ jobs:
         run: |
           subfolders=$(find . -mindepth 2 -name 'Cargo.toml' -exec dirname {} \; | python3 -c 'import sys, json; print(json.dumps([line.strip() for line in sys.stdin]))')
           echo "::set-output name=matrix::{\"project\": $subfolders}"
+
   build:
     needs: get-subfolders
     runs-on: ubuntu-latest
     strategy:
       matrix: ${{ fromJSON(needs.get-subfolders.outputs.matrix) }}
-
     outputs:
-      matrix: ${{ steps.set-built-matrix.outputs.matrix }}
+      projects: ${{ toJSON(needs.get-subfolders.outputs.matrix.project) }}
 
     steps:
       - uses: actions/checkout@v3
@@ -40,18 +40,25 @@ jobs:
         run: |
           cargo build --verbose
 
-      - name: Set completed build for ${{ matrix.project }}
-        id: set-built-matrix
-        run: |
-          echo "::set-output name=matrix::{\"project\": ${{ matrix.project }} }"
+      # - name: Upload binaries
+      #   uses: actions/upload-artifact@v2
+      #   with:
+      #     name: binaries-${{ matrix.project }}
+      #     path: ${{ matrix.project }}/target/debug/
+
   test:
     needs: build
     runs-on: ubuntu-latest
     strategy:
-      matrix: ${{ fromJSON(needs.build.outputs.matrix) }}
-
+      matrix: ${{ fromJSON(needs.build.outputs.projects) }}
     steps:
       - uses: actions/checkout@v3
+
+      # - name: Download binaries
+      #   uses: actions/download-artifact@v2
+      #   with:
+      #     name: binaries-${{ matrix.project }}
+      #     path: ${{ matrix.project }}/target/debug/
 
       - name: Test ${{ matrix.project }}
         working-directory: ${{ matrix.project }}
