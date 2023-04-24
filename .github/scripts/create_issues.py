@@ -14,18 +14,27 @@ headers = {
     "Authorization": f"token {token}",
 }
 
+# Get all open issues
+issues_url = f"https://api.github.com/repos/{repo}/issues?state=open"
+response = requests.get(issues_url, headers=headers)
+open_issues = json.loads(response.text)
+
+print(f"Found {len(open_issues)} open issues")
+
 # Iterate over the warnings and create issues
 for warning in warnings.strip().split("\n"):
     # Format the title of the issue
-    issue_title = warning.split("\n", 1)[0]
+    issue_title = warning.split('\\n', 1)[0]
     title = f"Build warning: { issue_title }"
 
     # Check if an issue with the same title already exists
-    search_url = f"https://api.github.com/repos/{repo}/issues?q={title}"
-    response = requests.get(search_url, headers=headers)
-    existing_issues = json.loads(response.text)
+    existing_issue = None
+    for issue in open_issues:
+        if issue["title"] == title:
+            existing_issue = issue
+            break
 
-    if len(existing_issues) == 0:
+    if existing_issue is None:
         # Create the issue
         issue_data = {
             "title": title,
@@ -33,4 +42,5 @@ for warning in warnings.strip().split("\n"):
             "labels": ["build-warning"],
         }
         create_url = f"https://api.github.com/repos/{repo}/issues"
-        requests.post(create_url, headers=headers, json=issue_data)
+        res = requests.post(create_url, headers=headers, json=issue_data)
+        print(f"Created issue: {res.status_code} {res.text}")
