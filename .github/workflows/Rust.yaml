@@ -33,12 +33,18 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Extract warnings and create issues
+      - name: Run cargo clippy and save output
+        working-directory: ${{ matrix.project }}
+        run: |
+          cargo clippy --verbose 2>&1 | tee clippy_output.log
+
+      - name: Create issues for build warnings
         working-directory: ${{ matrix.project }}
         env:
-          GITHUB_TOKEN: ${{ secrets.PAT }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          cargo clippy --verbose 2>&1 | grep '^warning:' | python3 $GITHUB_WORKSPACE/.github/scripts/create_issues.py
+          python3 $GITHUB_WORKSPACE/.github/scripts/create_issues.py clippy_output.log
+
 
       - name: Build ${{ matrix.project }}
         working-directory: ${{ matrix.project }}
