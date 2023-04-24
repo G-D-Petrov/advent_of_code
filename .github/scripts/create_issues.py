@@ -1,35 +1,35 @@
 import os
-import re
 import sys
 import json
 import requests
 
-if __name__ == "__main__":
-    warnings = sys.stdin.read().strip()
-    if not warnings:
-        sys.exit(0)
+# Get the warning messages from the input
+warnings = sys.stdin.read()
 
-    token = os.environ["GITHUB_TOKEN"]
-    repo = os.environ["GITHUB_REPOSITORY"]
-    api_url = f"https://api.github.com/repos/{repo}/issues"
+# Set up the GitHub API
+repo = os.getenv("GITHUB_REPOSITORY")
+token = os.getenv("GITHUB_TOKEN")
+headers = {
+    "Accept": "application/vnd.github+json",
+    "Authorization": f"token {token}",
+}
 
-    headers = {
-        "Authorization": f"token {token}",
-        "Accept": "application/vnd.github+json",
-    }
+# Iterate over the warnings and create issues
+for warning in warnings.strip().split("\n"):
+    # Format the title of the issue
+    title = f"Build warning: { warning.split('\\n', 1)[0] }"
 
-    warning_list = re.split(r"\n(?=warning:)", warnings)
+    # Check if an issue with the same title already exists
+    search_url = f"https://api.github.com/repos/{repo}/issues?q={title}"
+    response = requests.get(search_url, headers=headers)
+    existing_issues = json.loads(response.text)
 
-    for warning in warning_list:
-        title = f"Build warning: { warning.split('\n', 1)[0] }"
-        body = f"```rust\n{warning}\n```"
-
-        data = {
+    if len(existing_issues) == 0:
+        # Create the issue
+        issue_data = {
             "title": title,
-            "body": body,
+            "body": f"```\n{warning}\n```",
             "labels": ["build-warning"],
         }
-
-        response = requests.post(api_url, headers=headers, json=data)
-        if response.status_code != 201:
-            print(f"Failed to create issue: {response.text}")
+        create_url = f"https://api.github.com/repos/{repo}/issues"
+        requests.post(create_url, headers=headers, json=issue_data)
