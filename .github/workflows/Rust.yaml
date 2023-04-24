@@ -15,6 +15,9 @@ jobs:
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
       - name: Get Subfolders
         id: set-matrix
         run: |
@@ -27,11 +30,15 @@ jobs:
     strategy:
       matrix: ${{ fromJSON(needs.get-subfolders.outputs.matrix) }}
     steps:
-      # - name: Extract warnings and create issues
-      #   env:
-      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      #   run: |
-      #     cargo clippy --verbose 2>&1 | grep '^warning:' | python3 ./.github/scripts/create_issues.py
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+    # - name: Extract warnings and create issues
+    #   working-directory: ${{ matrix.project }}
+    #   env:
+    #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    #   run: |
+    #     cargo clippy --verbose 2>&1 | grep '^warning:' | python3 ../../.github/scripts/create_issues.py
 
       - name: Build ${{ matrix.project }}
         working-directory: ${{ matrix.project }}
