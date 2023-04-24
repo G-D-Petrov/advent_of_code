@@ -18,7 +18,7 @@ print("Creating issues for build warnings...")
 print(f"log file: {lines}")
 
 # Filter the lines to get only warnings and strip escape sequences
-warnings = [strip_ansi_escape(line.strip()) for line in lines if "warning" in line]
+warnings = [strip_ansi_escape(line.strip()) for line in lines if "warning" in line and "(lib) generated" not in line]
 
 # Initialize GitHub API client
 gh = Github(os.environ["GITHUB_TOKEN"])
