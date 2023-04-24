@@ -36,28 +36,29 @@ jobs:
         working-directory: ${{ matrix.project }}
         run: |
           cargo build --verbose
+
       - name: Upload binaries
         uses: actions/upload-artifact@v2
         with:
-          name: binaries-${{ matrix.project }}
+          name: binaries-${{ matrix.project // '/' == '-' }}
+          path: ${{ matrix.project }}/target/debug/
+
+  test:
+    needs: build
+    runs-on: ubuntu-latest
+    strategy:
+      matrix: ${{ fromJSON(needs.get-subfolders.outputs.matrix) }}
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Download binaries
+        uses: actions/download-artifact@v2
+        with:
+          name: binaries-${{ matrix.project // '/' == '-' }}
           path: ${{ matrix.project }}/target/debug
 
-  # test:
-  #   needs: build
-  #   runs-on: ubuntu-latest
-  #   strategy:
-  #     matrix: ${{ fromJSON(needs.get-subfolders.outputs.matrix) }}
-
-  #   steps:
-  #     - uses: actions/checkout@v3
-
-  #     - name: Download binaries
-  #       uses: actions/download-artifact@v2
-  #       with:
-  #         name: binaries-${{ matrix.project }}
-  #         path: ${{ matrix.project }}/target/debug
-
-  #     - name: Test ${{ matrix.project }}
-  #       working-directory: ${{ matrix.project }}
-  #       run: |
-  #         cargo test --verbose --no-default-features --features "test-binaries"
+      - name: Test ${{ matrix.project }}
+        working-directory: ${{ matrix.project }}
+        run: |
+          cargo test --verbose --no-default-features --features "test-binaries"
