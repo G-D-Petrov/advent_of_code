@@ -6,6 +6,8 @@ import requests
 # Get the warning messages from the input
 warnings = sys.stdin.read()
 
+print(f"Found warnings: {warnings} ")
+
 # Set up the GitHub API
 repo = os.getenv("GITHUB_REPOSITORY")
 token = os.getenv("GITHUB_TOKEN")
