@@ -10,7 +10,15 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
+  install_dep:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Install pyGithub
+      run: |
+        python3 -m pip install pyGithub
+
   get-subfolders:
+    needs: install_dep
     runs-on: ubuntu-latest
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
