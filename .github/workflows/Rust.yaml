@@ -30,7 +30,7 @@ jobs:
       matrix: ${{ fromJSON(needs.get-subfolders.outputs.matrix) }}
 
     outputs:
-      built_matrix: ${{ steps.set-built-matrix.outputs.built_matrix }}
+      matrix: ${{ steps.set-built-matrix.outputs.matrix }}
 
     steps:
       - uses: actions/checkout@v3
@@ -43,12 +43,12 @@ jobs:
       - name: Set completed build for ${{ matrix.project }}
         id: set-built-matrix
         run: |
-          echo "::set-output name=built_matrix::{\"project\": ${{ matrix.project }} }"
+          echo "::set-output name=matrix::{\"project\": ${{ matrix.project }} }"
   test:
     needs: build
     runs-on: ubuntu-latest
     strategy:
-      matrix: ${{ fromJSON(needs.build.outputs.built_matrix) }}
+      matrix: ${{ fromJSON(needs.build.outputs.matrix) }}
 
     steps:
       - uses: actions/checkout@v3
