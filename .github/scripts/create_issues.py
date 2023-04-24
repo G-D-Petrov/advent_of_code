@@ -17,7 +17,8 @@ headers = {
 # Iterate over the warnings and create issues
 for warning in warnings.strip().split("\n"):
     # Format the title of the issue
-    title = f"Build warning: { warning.split('\\n', 1)[0] }"
+    issue_title = warning.split("\n", 1)[0]
+    title = f"Build warning: { issue_title }"
 
     # Check if an issue with the same title already exists
     search_url = f"https://api.github.com/repos/{repo}/issues?q={title}"
