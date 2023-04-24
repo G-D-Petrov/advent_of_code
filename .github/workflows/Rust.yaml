@@ -29,6 +29,9 @@ jobs:
     strategy:
       matrix: ${{ fromJSON(needs.get-subfolders.outputs.matrix) }}
 
+    outputs:
+      built_matrix: ${{ steps.set-matrix.outputs.built_matrix }}
+
     steps:
       - uses: actions/checkout@v3
 
@@ -36,11 +39,15 @@ jobs:
         working-directory: ${{ matrix.project }}
         run: |
           cargo build --verbose
+
+      - name: Set completed build for ${{ matrix.project }}
+        run: |
+          echo "::set-output name=built_matrix::{\"project\": ${{ matrix.project }} }"
   test:
-    needs: get-subfolders
+    needs: build
     runs-on: ubuntu-latest
     strategy:
-      matrix: ${{ fromJSON(needs.get-subfolders.outputs.matrix) }}
+      built_matrix: ${{ fromJSON(needs.build.outputs.built_matrix) }}
 
     steps:
       - uses: actions/checkout@v3
